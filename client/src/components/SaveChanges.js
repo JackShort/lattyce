@@ -1,7 +1,7 @@
 import React from 'react';
 import { Popover, Tooltip, Modal, OverlayTrigger, Button, FormGroup, ControlLabel, FormControl } from 'react-bootstrap';
 
-class SaveAlert extends React.Component {
+class SaveChanges extends React.Component {
     constructor(props) {
         super(props);
 
@@ -35,13 +35,12 @@ class SaveAlert extends React.Component {
         this.setState({ value: e.target.value });
     }
 
-    handleSubmit(event) {
-        event.preventDefault();
-
+    handleSubmit(e) {
+        var value = e.target.getAttribute('value');
         this.props.callback();
         this.setState({ show: false });
 
-        this.props.saveData(this.state.value);
+        this.props.saveData(value);
     }
 
     render() {
@@ -54,22 +53,15 @@ class SaveAlert extends React.Component {
                   <Modal.Title>Save Graph</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <form>
-                        <FormGroup
-                            controlId="saveGraph"
-                        >
-                            <ControlLabel>Name</ControlLabel>
-                            <FormControl type="text" placeholder="Graph name" value={this.state.value} onChange={this.handleChange} ></FormControl>
-                        </FormGroup>
-                    </form>
+                    <h3>Do you wish to save your data?</h3>
+                    <br />
+                    <Button type="submit" className="btn btn-primary" value={1} onClick={this.handleSubmit}>Yes</Button>
+                    <Button type="submit" className="btn btn-danger" value={0} onClick={this.handleSubmit}>No</Button>
                 </Modal.Body>
-                <Modal.Footer>
-                  <Button type="submit" onClick={this.handleSubmit}>Submit</Button>
-                </Modal.Footer>
               </Modal>
             </div>
           );
         }
 }
 
-export default SaveAlert;
+export default SaveChanges;

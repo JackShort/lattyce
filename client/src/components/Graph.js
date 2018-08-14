@@ -11,6 +11,8 @@ import { runInThisContext } from 'vm';
 import SaveAlert from './SaveAlert';
 import AddEntity from './AddEntity';
 import NodeData from './NodeData';
+import CreateLink from './CreateLink';
+import SaveChanges from './SaveChanges';
 
 const fetch = new createApolloFetch({
   uri: 'http://localhost:4000/graphql',
@@ -38,7 +40,7 @@ class Graph extends Component {
 	constructor(props) {
 		super(props);
 
-		this.state = { cytoscapeLayout: 'grid', elements: {}, elementIds: [], links: [], linkDict: {}, selectedNodeId: '', shouldUpdatePositions: false, size: 12, table: false, map: false, mapHeight: '900px', graphs: [], showAlert: false, showAddEntity: false, shouldChangeGraph: true, selected: [], selectedNodes: [], loaded: true, justStoredPostions: false, positions: {}, storedNodesAndPositions: [], entities: {}, newData: false, canAddLink: false, nodesToLink: [], showEditNode: false, graphLoaded: false, graphId: 0, graphName: '' };
+		this.state = { cytoscapeLayout: 'grid', elements: {}, elementIds: [], links: [], linkDict: {}, selectedNodeId: '', shouldUpdatePositions: false, size: 12, table: false, map: false, mapHeight: '900px', graphs: [], showAlert: false, showAddEntity: false, shouldChangeGraph: true, selected: [], selectedNodes: [], loaded: true, justStoredPostions: false, positions: {}, storedNodesAndPositions: [], entities: {}, newData: false, canAddLink: false, nodesToLink: [], showEditNode: false, graphLoaded: false, graphId: 0, graphName: '', showCreateLink: false, showSaveChanges: false, shouldClearOnSave: false };
 		this.changeLayout = this.changeLayout.bind(this);
 		this.showTable = this.showTable.bind(this);
 		this.showMap = this.showMap.bind(this);
@@ -64,6 +66,11 @@ class Graph extends Component {
 		this.editNode = this.editNode.bind(this);
 		this.hideEditNode = this.hideEditNode.bind(this);
 		this.saveAs = this.saveAs.bind(this);
+		this.showCreateLink = this.showCreateLink.bind(this);
+		this.hideCreateLink = this.hideCreateLink.bind(this);
+		this.showSaveChanges = this.showSaveChanges.bind(this);
+		this.hideSaveChanges = this.hideSaveChanges.bind(this);
+		this.saveChanges = this.saveChanges.bind(this);
 	}
 
 	componentDidMount() {
@@ -364,6 +371,7 @@ class Graph extends Component {
 			if (this.state.map) {
 				this.setState({ size: 6, table: false, mapHeight: '900px', shouldChangeGraph: false, loaded: false, justStoredPostions: false });
 			} else {
+				this.savePositions();
 				this.setState({ size: 12, table: false, shouldChangeGraph: true, loaded: false, justStoredPostions: false });
 			}
 		}
@@ -436,8 +444,6 @@ class Graph extends Component {
 		};
 
 		fetch({ query, variables }).then( res => {
-			console.log(res)
-
 			let positions = [];
 			this.cy.nodes().map(node => {
 				var dict = {}
@@ -514,10 +520,33 @@ class Graph extends Component {
 		};
 
 		fetch({ query, variables }).then( res => {
-			console.log(res.data);
 			this.getGraphs();
-			this.setState({ graphLoaded: true, graphId: res.data['createGraph']['id'], graphName: res.data['createGraph']['name'] });
+			if (this.state.shouldClearOnSave) {
+				this.newChart();
+			} else {
+				this.setState({ graphLoaded: true, graphId: res.data['createGraph']['id'], graphName: res.data['createGraph']['name'] });
+			}
 		});
+	}
+
+	showSaveChanges() {
+		this.setState({ showSaveChanges: true, shouldChangeGraph: false });
+	}
+
+	hideSaveChanges() {
+		this.setState({ showSaveChanges: false, shouldChangeGraph: false });
+	}
+
+	saveChanges(shouldSave) {
+		if (shouldSave == 1) {
+			if (this.state.graphLoaded) {
+				this.overwriteData(this.state.graphName);
+			} else {
+				this.setState({ showAlert: true, shouldChangeGraph: false, shouldClearOnSave: true });
+			}
+		} else {
+			this.newChart();
+		}
 	}
 
 	addEntity(data) {
@@ -551,7 +580,8 @@ class Graph extends Component {
 		this.setState({ canAddLink: !this.state.canAddLink, shouldChangeGraph: false });
 	}
 
-	createLink() {
+	createLink(value) {
+		this.savePositions();
 		if (this.state.selected.length == 2) {
 			const sourceId = this.state.selected[0];
 			const targetId = this.state.selected[1];
@@ -572,7 +602,7 @@ class Graph extends Component {
 				}
 
 				const link = {
-					'value': 'test',
+					'value': value,
 					'source': sourceId,
 					'target': targetId
 				}
@@ -580,6 +610,7 @@ class Graph extends Component {
 				this.setState(prevState => ({
 					links: [...prevState.links, link],
 					linkDict: linkDict,
+					shouldUpdatePositions: true,
 					shouldChangeGraph: true,
 				}))
 			}
@@ -612,18 +643,14 @@ class Graph extends Component {
 	}
 
 	savePositions() {
-		let positions = [];
+		var elements = this.state.elements;
 		this.cy.nodes().map(node => {
-			var dict = {}
 			var relPosition = node.relativePosition();
-			dict["id"] = node.id();
-			dict["x"] = relPosition['x'];
-			dict["y"] = relPosition['y'];
-			positions.push(dict);
-			return true;
+			elements[node.id()]["x"] = relPosition['x'];
+			elements[node.id()]["y"] = relPosition['y'];
 		});
 
-		this.setState({ storedNodesAndPositions: positions });
+		this.setState({ elements: elements });
 	}
 
 	getPositions() {
@@ -641,20 +668,14 @@ class Graph extends Component {
 		return positions;
 	}
 
-	// setPositions() {
-	// 	var dict = {};
-
-	// 	this.state.storedNodesAndPositions.forEach(node => {
-	// 		dict[node['id']] = node;
-	// 	});
-
-	// 	this.cy.nodes().forEach(node => {
-	// 		node.relativePosition({
-	// 			x: dict[node.id()]['x'],
-	// 			y: dict[node.id()]['y']
-	// 		});
-	// 	});
-	// }
+	setPositions() {
+		this.cy.nodes().forEach(node => {
+			node.relativePosition({
+				x: this.state.elements[node.id()]['x'],
+				y: this.state.elements[node.id()]['y']
+			});
+		});
+	}
 
 	highlight() {
 		var selected = this.state.selected;
@@ -688,6 +709,14 @@ class Graph extends Component {
 
 	hideAlert() {
 		this.setState({ showAlert: false, shouldChangeGraph: false });
+	}
+
+	showCreateLink() {
+		this.setState({ showCreateLink: true, shouldChangeGraph: false });
+	}
+
+	hideCreateLink() {
+		this.setState({ showCreateLink: false, shouldChangeGraph: false });
 	}
 
 	loadData(id) {
@@ -730,15 +759,8 @@ class Graph extends Component {
 				dict[node['id']] = node;
 				elementIds.push(node['id']);
 			});
-
-			this.setState({ elements: dict, elementIds: elementIds, links: res.data['graph']['links'], graphId: id, graphName: name, graphLoaded: true });
-
-			// this.cy.nodes().forEach(node => {
-			// 	node.relativePosition({
-			// 		x: dict[node.id()]['x'],
-			// 		y: dict[node.id()]['y']
-			// 	});
-			// });
+			
+			this.setState({ elements: dict, elementIds: elementIds, links: res.data['graph']['links'], graphId: id, graphName: name, graphLoaded: true, shouldUpdatePositions: true });
 		});
 	}
 
@@ -869,6 +891,10 @@ class Graph extends Component {
 			elementIds: [],
 			links: [],
 			linkDict: {},
+			graphId: 0,
+			graphName: '',
+			shouldUpdatePositions: false,
+			shouldClearOnSave: false,
 			shouldChangeGraph: true
 		})
 	}
@@ -910,6 +936,8 @@ class Graph extends Component {
 				<SaveAlert shouldShow={this.state.showAlert} callback={this.hideAlert} saveData={this.saveData} />
 				<AddEntity shouldShow={this.state.showAddEntity} callback={this.hideEntity} saveData={this.addEntity} />
 				<NodeData shouldShow={this.state.showEditNode} callback={this.hideEditNode} nodeId={this.state.selected[0]} nodeData={this.state.elements} />
+				<CreateLink shouldShow={this.state.showCreateLink} callback={this.hideCreateLink} saveData={this.createLink} />
+				<SaveChanges shouldShow={this.state.showSaveChanges} callback={this.hideSaveChanges} saveData={this.saveChanges} />
 
 				<Navbar>
 					<Navbar.Header>
@@ -936,7 +964,7 @@ class Graph extends Component {
 							<MenuItem eventKey={4} onClick={this.showAlert}>Save</MenuItem>
 							<MenuItem eventKey={4} onClick={this.saveAs}>Save As</MenuItem>
 							<MenuItem eventKey={5} onClick={this.showEntity}>Add Entity</MenuItem>
-							<MenuItem eventKey={6} onClick={this.createLink}>Add Link</MenuItem>
+							<MenuItem eventKey={6} onClick={this.showCreateLink}>Add Link</MenuItem>
 							<MenuItem eventKey={7} onClick={this.expand}>Expand</MenuItem>
 							<MenuItem eventKey={8} onClick={this.newChart}>New Chart</MenuItem>
 							<MenuItem eventKey={9} onClick={this.editNode}>Edit Node</MenuItem>
@@ -952,6 +980,18 @@ class Graph extends Component {
 						</NavDropdown>
 					</Nav>
 				</Navbar>
+
+				<ul className="nav nav-tabs">
+					<li role="presentation" className="active" >
+						<a href="#">
+							<button className="close closeTab" type="button" onClick={this.showSaveChanges} >
+								×
+							</button>
+							{this.state.graphName === '' ? 'Undefined' : this.state.graphName}
+						</a>
+					</li>
+				</ul>
+
 				<Row style={{ width: '100%' }}>
 					{/* <Col sm={this.state.size}> */}
 					<Col sm={this.state.size}>
@@ -982,6 +1022,10 @@ class Graph extends Component {
 
 
 		this.highlight();
+
+		if (this.state.shouldUpdatePositions) {
+			this.setPositions();
+		}
 
 		cy.on('tap', 'node', function (evt) {
 			var node = evt.target;

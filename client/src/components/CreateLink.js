@@ -1,7 +1,7 @@
 import React from 'react';
 import { Popover, Tooltip, Modal, OverlayTrigger, Button, FormGroup, ControlLabel, FormControl } from 'react-bootstrap';
 
-class SaveAlert extends React.Component {
+class CreateLink extends React.Component {
     constructor(props) {
         super(props);
 
@@ -35,9 +35,7 @@ class SaveAlert extends React.Component {
         this.setState({ value: e.target.value });
     }
 
-    handleSubmit(event) {
-        event.preventDefault();
-
+    handleSubmit() {
         this.props.callback();
         this.setState({ show: false });
 
@@ -51,15 +49,15 @@ class SaveAlert extends React.Component {
             <div>
               <Modal show={this.state.show} onHide={this.handleDismiss}>
                 <Modal.Header closeButton>
-                  <Modal.Title>Save Graph</Modal.Title>
+                  <Modal.Title>Create Link</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <form>
                         <FormGroup
-                            controlId="saveGraph"
+                            controlId="createLink"
                         >
-                            <ControlLabel>Name</ControlLabel>
-                            <FormControl type="text" placeholder="Graph name" value={this.state.value} onChange={this.handleChange} ></FormControl>
+                            <ControlLabel>Value</ControlLabel>
+                            <FormControl type="text" placeholder="Link Value" value={this.state.value} onChange={this.handleChange} ></FormControl>
                         </FormGroup>
                     </form>
                 </Modal.Body>
@@ -72,4 +70,4 @@ class SaveAlert extends React.Component {
         }
 }
 
-export default SaveAlert;
+export default CreateLink;

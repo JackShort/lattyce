@@ -3,6 +3,7 @@
 ## Make sure the following is installed on your stystem (Download the latest stable release of everything)
 * PostgreSQL
     * It can be downloaded here: https://www.postgresql.org/download/
+    * On setup if it asks which port to install it on choose: 5432
 * Download PGAdmin
     * It can be downloaded here: https://www.pgadmin.org/download/
 * Node.js
