@@ -1,6 +1,6 @@
 # Lattyce Installation Guide
 
-## Make sure the following is installed on your stystem
+## Make sure the following is installed on your stystem (Download the latest stable release of everything)
 * PostgreSQL
     * It can be downloaded here: https://www.postgresql.org/download/
 * Download PGAdmin
