@@ -1,0 +1,24 @@
+body { 
+	font: 14px helvetica neue, helvetica, arial, sans-serif;
+  }
+
+.graph {
+	min-height: 900px;
+}
+
+.table-hover>tbody>tr:hover>td, .table-hover>tbody>tr:hover>th {
+  background-color: #d3d3ff;
+}
+
+.navbar,
+.navbar-default {
+    background-image: linear-gradient(to bottom,#00b0ff 0,#00b0ff 100%) !important;
+}
+
+.navbar-default, .navbar-brand {
+  color: white !important;
+}
+
+.active>th, .active>td {
+  background-color: #a1a2d9 !important;
+}
