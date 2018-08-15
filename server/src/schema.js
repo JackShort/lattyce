@@ -255,6 +255,10 @@ const schema = new GraphQLSchema({
       wildcard: {
         type: new GraphQLList(entityType),
         args: {
+          id: {
+            type: GraphQLString,
+            description: 'wildcard string to search on id'
+          },
           value: {
             type: GraphQLString,
             description: 'wildcard string to search on value'
@@ -267,6 +271,11 @@ const schema = new GraphQLSchema({
         resolve: (_, args) => {
           var valueLiteral = '';
           var typeLiteral = '';
+          var idLiteral = '';
+
+          if (args['id'] !== undefined) {
+            idLiteral = "CAST(id AS TEXT) ~ " + "'" + args['id'] + "'";
+          }
           
           if (args['value'] !== undefined) {
             valueLiteral = "value ~ " + "'" + args['value'] + "'";
@@ -278,6 +287,7 @@ const schema = new GraphQLSchema({
 
           return Entity.findAll({
             where: {
+              id: Sequelize.literal(idLiteral),
               value: Sequelize.literal(valueLiteral),
               type: Sequelize.literal(typeLiteral),
             }
