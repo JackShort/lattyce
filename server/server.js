@@ -104,7 +104,7 @@ server.get('/logout', (req, res) => {
 });
 
 // this is for postgres
-server.use(postgraphile('postgres://localhost:5432', 'public', {graphiql: true}));
+// server.use(postgraphile('postgres://localhost:5432', 'public', {graphiql: true}));
 
 // this is for the express server
 db.sync();
