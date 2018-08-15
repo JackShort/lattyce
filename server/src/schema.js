@@ -5,6 +5,7 @@ import {
 import { resolver, createNodeInterface } from 'graphql-sequelize';
 import { GraphQLSchema, GraphQLObjectType, GraphQLInputObjectType, GraphQLString, GraphQLID, GraphQLNonNull, GraphQLList, GraphQLInt, GraphQLFloat } from 'graphql';
 import { User, Entity, EntityLinks, Graph, Nodes, Links } from './models';
+import Sequelize from 'sequelize';
 
 const userType = new GraphQLObjectType({
   name: 'User',
@@ -249,6 +250,44 @@ const schema = new GraphQLSchema({
             description: 'email of user',
             type: new GraphQLNonNull(GraphQLString),
           }
+        }
+      },
+      wildcard: {
+        type: new GraphQLList(entityType),
+        args: {
+          value: {
+            type: GraphQLString,
+            description: 'wildcard string to search on value'
+          },
+          type: {
+            type: GraphQLString,
+            description: 'wildcard string to search on type'
+          }
+        },
+        resolve: (_, args) => {
+          var valueLiteral = '';
+          var typeLiteral = '';
+          
+          if (args['value'] !== undefined) {
+            valueLiteral = "value ~ " + "'" + args['value'] + "'";
+          }
+
+          if (args['type'] !== undefined) {
+            typeLiteral = "type ~ " + "'" + args['type'] + "'";
+          }
+
+          return Entity.findAll({
+            where: {
+              value: Sequelize.literal(valueLiteral),
+              type: Sequelize.literal(typeLiteral),
+            }
+          })
+            .then(entities => {
+              return entities;
+            })
+            .catch(err => {
+              return Promise.reject(err)
+            })
         }
       },
       entity: {
