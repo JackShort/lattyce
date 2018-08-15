@@ -1,6 +1,6 @@
 # Lattyce Installation Guide
 
-## Make sure the following is installed on your stystem (Download the latest stable release of everything)
+## Make sure the following is installed on your system (Download the latest stable release of everything)
 * PostgreSQL
     * It can be downloaded here: https://www.postgresql.org/download/
     * On setup if it asks which port to install it on choose: 5432
@@ -26,7 +26,7 @@
 
 ## Install the packages in each of the folders ($ - means console command)
 * Install the packages in the client project
-    * $ cd /Lattyce/client
+    * $ cd /lattyce/client
     * $ npm install
 
 * Install the packages in the client project
@@ -36,13 +36,13 @@
 ## Start the development servers ($ - means console command)
 * Open 3 terminals
 * In the first terminal do the following to start the image hosting server:
-    * $ cd Lattyce/client/src/icons
+    * $ cd lattyce/client/src/icons
     * $ http-server -c-1 --cors
 * In the second terminal do the following to start the react server:
-    * $ cd Lattyce/client
+    * $ cd lattyce/client
     * $ npm start
 * In the third terminal do the following to start the express/graphql server:
-    * $ cd Lattyce/server
+    * $ cd lattyce/server
     * $ npm start
 
 ## View Results
