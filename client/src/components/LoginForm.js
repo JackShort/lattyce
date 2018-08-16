@@ -36,6 +36,10 @@ class LoginForm extends Component {
 	render() {
 		return (
 			<div className="Login">
+				<div className="alert alert-warning" hidden={!this.props.incorrectLogin}>
+   	 				Incorrect login information.
+  				</div>
+
 				<form onSubmit={this.handleSubmit}>
 					<FormGroup controlId="username" bsSize="large">
 						<ControlLabel>Username</ControlLabel>

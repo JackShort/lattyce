@@ -4,7 +4,7 @@ import Geocode from 'react-geocode';
 
 const AnyReactComponent = ({ text }) => (
     <div style={{
-        backgroundImage: 'url(' + require('../icons/male.png') + ')',
+        backgroundImage: 'url(' + require('../icons/home.png') + ')',
         backgroundSize: 'contain',
         width: '50px',
         height: '50px',
@@ -17,7 +17,7 @@ const AnyReactComponent = ({ text }) => (
 class Map extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { lat: 38.79768, lng: -77.400763, addresses: [], entities: this.props.entities };
+        this.state = { lat: 38.79768, lng: -77.400763, addresses: [] };
 
         this.getAddresses = this.getAddresses.bind(this);
     }
@@ -30,7 +30,9 @@ class Map extends React.Component {
     };
 
     componentDidUpdate(prevProps) { 
-        if (this.props.entities !== prevProps.entities) {
+        console.log(prevProps)
+        console.log
+        if (this.props.entities !== this.prevProps) {
             this.getAddresses(this.props.entities);
         }
     }
@@ -107,17 +109,21 @@ class Map extends React.Component {
 	//}
 
     getAddresses(entities) {
+        console.log('hellooo')
+        console.log(entities)
         if (entities !== undefined) {
             var addresses = {}
 
             for (var entity in entities) {
-                const addy = entities[entity]['address'];
+                if (entities[entity['type']] === 'address') {
+                    const addy = entities[entity]['value'];
 
-                if (addresses[addy] === undefined) {
-                    const l =[entity];
-                    addresses[addy] = l;
-                } else {
-                    addresses[addy].push(entity);
+                    if (addresses[addy] === undefined) {
+                        const l =[entity];
+                        addresses[addy] = l;
+                    } else {
+                        addresses[addy].push(entity);
+                    }
                 }
             }
 

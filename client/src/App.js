@@ -117,7 +117,8 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
 
 class Login extends Component {
   state = {
-		redirectToReferrer: false
+    redirectToReferrer: false,
+    incorrectLogin: false,
 	}
 
 	login = (data) => {
@@ -134,7 +135,9 @@ class Login extends Component {
 				auth.authenticate(() => {
 					this.setState({ redirectToReferrer: true })
 				});
-			}
+			} else {
+        this.setState({ incorrectLogin: true })
+      }
 		})
 		.catch((err) => {
 			console.log('Error logging in.', err);
@@ -153,7 +156,7 @@ class Login extends Component {
 		
 		return (
 			<div>
-				<LoginForm onLogin={this.login} />
+				<LoginForm onLogin={this.login} incorrectLogin={this.state.incorrectLogin} />
 			</div>
 		)
 	}

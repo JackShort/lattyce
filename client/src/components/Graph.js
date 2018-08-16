@@ -13,6 +13,7 @@ import AddEntity from './AddEntity';
 import NodeData from './NodeData';
 import CreateLink from './CreateLink';
 import SaveChanges from './SaveChanges';
+import WildcardSearch from './WildcardSearch';
 
 const fetch = new createApolloFetch({
   uri: 'http://localhost:4000/graphql',
@@ -40,7 +41,7 @@ class Graph extends Component {
 	constructor(props) {
 		super(props);
 
-		this.state = { cytoscapeLayout: 'grid', elements: {}, elementIds: [], links: [], linkDict: {}, selectedNodeId: '', shouldUpdatePositions: false, size: 12, table: false, map: false, mapHeight: '900px', graphs: [], showAlert: false, showAddEntity: false, shouldChangeGraph: true, selected: [], selectedNodes: [], loaded: true, justStoredPostions: false, positions: {}, storedNodesAndPositions: [], entities: {}, newData: false, canAddLink: false, nodesToLink: [], showEditNode: false, graphLoaded: false, graphId: 0, graphName: '', showCreateLink: false, showSaveChanges: false, shouldClearOnSave: false };
+		this.state = { cytoscapeLayout: 'grid', elements: {}, elementIds: [], links: [], linkDict: {}, selectedNodeId: '', shouldUpdatePositions: false, size: 12, table: false, map: false, mapHeight: '900px', graphs: [], showAlert: false, showAddEntity: false, shouldChangeGraph: true, selected: [], selectedNodes: [], loaded: true, justStoredPostions: false, positions: {}, storedNodesAndPositions: [], entities: {}, newData: false, canAddLink: false, nodesToLink: [], showEditNode: false, graphLoaded: false, graphId: 0, graphName: '', showCreateLink: false, showSaveChanges: false, shouldClearOnSave: false, showSearch: false };
 		this.changeLayout = this.changeLayout.bind(this);
 		this.showTable = this.showTable.bind(this);
 		this.showMap = this.showMap.bind(this);
@@ -71,6 +72,8 @@ class Graph extends Component {
 		this.showSaveChanges = this.showSaveChanges.bind(this);
 		this.hideSaveChanges = this.hideSaveChanges.bind(this);
 		this.saveChanges = this.saveChanges.bind(this);
+		this.showSearch = this.showSearch.bind(this);
+		this.hideSearch = this.hideSearch.bind(this);
 	}
 
 	componentDidMount() {
@@ -565,7 +568,7 @@ class Graph extends Component {
 		elements[node['id']] = node;
 		elementIds.push(parseInt(data['id']));
 
-		this.setState({ elements: elements, elementIds: elementIds, showAddEntity: false, shouldChangeGraph: true });
+		this.setState({ elements: elements, elementIds: elementIds, showAddEntity: false, showSearch: false, shouldChangeGraph: true });
 	}
 
 	showEntity() {
@@ -709,6 +712,14 @@ class Graph extends Component {
 
 	hideAlert() {
 		this.setState({ showAlert: false, shouldChangeGraph: false });
+	}
+
+	showSearch() {
+		this.setState({ showSearch: true, shouldChangeGraph: false })
+	}
+
+	hideSearch() {
+		this.setState({ showSearch: false, shouldChangeGraph: false })
 	}
 
 	showCreateLink() {
@@ -932,12 +943,13 @@ class Graph extends Component {
 		var graphs = this.state.graphs;
 
 		return (
-			<Grid style={{ height: '100vh', width: '100%' }}>
+			<Grid style={{ height: '100vh', width: '100%' }} className="full-width-container" >
 				<SaveAlert shouldShow={this.state.showAlert} callback={this.hideAlert} saveData={this.saveData} />
 				<AddEntity shouldShow={this.state.showAddEntity} callback={this.hideEntity} saveData={this.addEntity} />
 				<NodeData shouldShow={this.state.showEditNode} callback={this.hideEditNode} nodeId={this.state.selected[0]} nodeData={this.state.elements} />
 				<CreateLink shouldShow={this.state.showCreateLink} callback={this.hideCreateLink} saveData={this.createLink} />
 				<SaveChanges shouldShow={this.state.showSaveChanges} callback={this.hideSaveChanges} saveData={this.saveChanges} />
+				<WildcardSearch shouldShow={this.state.showSearch} callback={this.hideSearch} saveData={this.addEntity} />
 
 				<Navbar>
 					<Navbar.Header>
@@ -955,15 +967,16 @@ class Graph extends Component {
 							<MenuItem eventKey={1.3} onClick={() => this.changeLayout('circle')}>Circle</MenuItem>
 						</NavDropdown>
 
-						<NavDropdown eventKey={17} title="View" id="view">
+						<NavDropdown eventKey={17} title="View" id="basic-nav-dropdown">
 							<MenuItem eventKey={2} onClick={this.showTable}>Table</MenuItem>
 							<MenuItem eventKey={3} onClick={this.showMap}>Map</MenuItem>
 						</NavDropdown>
 
-						<NavDropdown eventKey={18} title="Edit" id="edit">
+						<NavDropdown eventKey={18} title="Edit" id="basic-nav-dropdown">
 							<MenuItem eventKey={4} onClick={this.showAlert}>Save</MenuItem>
 							<MenuItem eventKey={4} onClick={this.saveAs}>Save As</MenuItem>
 							<MenuItem eventKey={5} onClick={this.showEntity}>Add Entity</MenuItem>
+							<MenuItem eventKey={17} onClick={this.showSearch}>Wild Card Search</MenuItem>
 							<MenuItem eventKey={6} onClick={this.showCreateLink}>Add Link</MenuItem>
 							<MenuItem eventKey={7} onClick={this.expand}>Expand</MenuItem>
 							<MenuItem eventKey={8} onClick={this.newChart}>New Chart</MenuItem>
@@ -982,7 +995,7 @@ class Graph extends Component {
 				</Navbar>
 
 				<ul className="nav nav-tabs">
-					<li role="presentation" className="active" >
+					<li role="presentation" className="active" id='tab'>
 						<a href="#">
 							<button className="close closeTab" type="button" onClick={this.showSaveChanges} >
 								×
@@ -1001,7 +1014,7 @@ class Graph extends Component {
 					{/* <Col sm={this.state.size} hidden={!this.state.map}> */}
 					<Col sm={this.state.size} hidden={!this.state.map && !this.state.table}>
 						<Row hidden={!this.state.map}>
-							<Map entities={this.state.entities} height={this.state.mapHeight} />
+							<Map entities={this.state.elements} height={this.state.mapHeight} />
 						</Row>
 						<Row hidden={!this.state.table}>
 							<EntityTable data={this.getData()}  selected={this.state.selected} callback={this.tableMadeChange} />
