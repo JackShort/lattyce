@@ -40,17 +40,29 @@ class NodeData extends React.Component {
     }
 
     handleSubmit() {
-        var fields = this.state.node['fields'];
-        var values = this.state.node['values'];
         var node = this.state.node;
 
-        fields.push(this.state.field)
-        values.push(this.state.value)
+        if (this.state.field === 'id') {
+            node['id'] = this.state.value;
+            this.setState({ node: node, value: '', field: '' });
+        } else if (this.state.field === 'value') {
+            node['value'] = this.state.value;
+            this.setState({ node: node, value: '', field: '' });
+        } else if (this.state.field === 'type') {
+            node['type'] = this.state.value;
+            this.setState({ node: node, value: '', field: '' });
+        } else {
+            var fields = this.state.node['fields'];
+            var values = this.state.node['values'];
 
-        node['fields'] = fields;
-        node['values'] = values;
+            fields.push(this.state.field)
+            values.push(this.state.value)
 
-        this.setState({ node: node, value: '', field: '' });
+            node['fields'] = fields;
+            node['values'] = values;
+
+            this.setState({ node: node, value: '', field: '' });
+        }
     }
 
     render() {

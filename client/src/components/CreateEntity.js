@@ -3,12 +3,13 @@ import { Popover, Tooltip, Modal, Table, Button, FormGroup, ControlLabel, FormCo
 import { createApolloFetch } from 'apollo-fetch';
 import gql from 'graphql-tag';
 import { RSA_NO_PADDING } from 'constants';
+import './entity.css';
 
 const fetch = new createApolloFetch({
   uri: 'http://localhost:4000/graphql',
 });
 
-class WildcardSearch extends React.Component {
+class CreateEntity extends React.Component {
     constructor(props) {
         super(props);
 
@@ -49,70 +50,36 @@ class WildcardSearch extends React.Component {
 
     handleSubmit(e) {
         e.preventDefault();
-        // this.props.callback();
-        // this.setState({ show: false });
+        var data = {};
 
-        // this.props.saveData(this.state.value);
-
-        const query = gql`
-        query entityQuery($id: String, $value: String, $type: String) {
-            wildcard(id: $id, value: $value, type: $type) {
-	            id
-                value
-                type
-                fields
-                values
-            }
-        }
-        `;
-
-        var variables = {};
-
-        if (this.state.id !== '') {
-            variables['id'] = this.state.id;
+        data[this.state.id] = {
+            'id': this.state.id,
+            'value': this.state.value,
+            'type': this.state.type,
+            'fields': [],
+            'values': [],
         }
 
-        if (this.state.value !== '') {
-            variables['value'] = this.state.value;
+        if (data !== null) {
+            this.addEntityToGraph(data[this.state.id]);
+            this.setState({ value: '', type: '', id: '' })
         }
-
-        if (this.state.type !== '') {
-            variables['type'] = this.state.type;
-        }
-
-        fetch({ query, variables }). then( res => {
-			var data = res.data['wildcard'];
-
-            if (data !== null) {
-                this.setState({ showForm: false, data: data, value: '', type: '', id: '' })
-            }
-        });
 	}
 	
-	addEntityToGraph(i) {
+	addEntityToGraph(data) {
 		this.setState({ showForm: true });
-		this.props.saveData(this.state.data[i]);
+		this.props.saveData(data);
 	}
 
     render() {
-        const popover = (
-            <Popover id="modal-popover" title="popover">
-              very popover. such engagement
-            </Popover>
-          );
-
-          const tooltip = <Tooltip id="modal-tooltip">wow.</Tooltip>;
-
-          var data = this.state.data;
-      
           return (
-            <div>
-              <Modal show={this.state.show} onHide={this.handleDismiss}>
+            <div id="entityDiv">
+              <Modal show={this.state.show} onHide={this.handleDismiss} id="modal">
                 <Modal.Header closeButton>
-                  <Modal.Title>Wildcard Search</Modal.Title>
+                  <Modal.Title>Create Entity</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <form hidden={!this.state.showForm} id='formSearch'>
+                    <form id='createEntity'>
                         <FormGroup
                             controlId="id"
                         >
@@ -135,33 +102,9 @@ class WildcardSearch extends React.Component {
                         </FormGroup>
                     </form>
 
-                    <Table hidden={this.state.showForm}>
-            	        <thead>
-            	        	<tr>
-            	        		<th>ID #</th>
-            	        		<th>Entity</th>
-            	        		<th>Type</th>
-            	        	</tr>
-            	        </thead>
-
-            	        <tbody>
-            	        	{ data.map((row, i) => {
-            	        		return (
-            	        			<tr key={row.id + row.id} index={i} data={row.id} onClick={this.rowclick} >
-            	        				<td key={row.id}>{row.id}</td>
-            	        				<td key={row.value}>{row.value}</td>
-            	        				<td key={row.type}>{row.type}</td>
-                                        <td>
-                                            <Button type="submit" bsStyle="primary" onClick={() => { this.addEntityToGraph(i) }} >Add</Button>
-                                        </td>
-            	        			</tr>
-            	        		)
-            	        	}) }
-            	        </tbody>
-                    </Table>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" className={this.state.showForm ? 'visible btn btn-primary' : 'invisible btn btn-primary'} onClick={this.handleSubmit} form='formSearch' >Search</Button>
+                    <Button type="submit" className={'btn btn-info'} onClick={this.handleSubmit} form='createEntity' >Create</Button>
                 </Modal.Footer>
               </Modal>
             </div>
@@ -169,4 +112,4 @@ class WildcardSearch extends React.Component {
         }
 }
 
-export default WildcardSearch;
+export default CreateEntity;

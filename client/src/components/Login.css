@@ -1,24 +1,35 @@
 body {
-    background-color: #131C25;
+	background-color: #131C25;
 }
 
 @media all and (min-width: 480px) {
-    .Login {
-        padding: 60px 0;
-        background-color: #1A2836;
-        max-width: 420px;
-        margin: auto;
-        margin-top: 100px;
-    }
+	.Login {
+		background-color: #1A2836;
+		max-width: 420px;
+		margin: auto;
+		margin-top: 100px;
+		padding-bottom: 60px;
+	}
   
-    .Login form {
-        color: white;
-        margin: 0 auto;
-        max-width: 320px;
-    }
+	.Login form {
+		color: white;
+		margin: 0 auto;
+		max-width: 320px;
+	}
 
-    .alert {
-        margin: 0 auto;
-        max-width: 320px;
-    }
+	.header {
+		margin: auto;
+		color: #1DA1F2;
+		background-color: #243447;
+		text-align: center;
+		padding-top: 1px;
+		padding-bottom: 1px;
+		margin-bottom: 10px;
+	}
+
+
+	.alert {
+		margin: 0 auto;
+		max-width: 420px;
+	}
 }

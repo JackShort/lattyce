@@ -164,7 +164,8 @@ class Login extends Component {
 
 class Register extends React.Component {
 	state = {
-		redirectToReferrer: false
+		redirectToReferrer: false,
+		incorrectRegistration: false
 	}
 
 	register = (data) => {
@@ -180,6 +181,8 @@ class Register extends React.Component {
 				auth.authenticate(() => {
 					this.setState({ redirectToReferrer: true })
 				});
+			} else {
+				this.setState({ incorrectRegistration: true })
 			}
 		})
 		.catch((err) => {
@@ -190,7 +193,7 @@ class Register extends React.Component {
 	render() {
 		return (
 			<div>
-				<RegisterForm onRegister={this.register} />
+				<RegisterForm onRegister={this.register} incorrectRegistration={this.state.incorrectRegistration} />
 			</div>
 		)
 	}

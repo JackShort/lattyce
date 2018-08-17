@@ -17,7 +17,7 @@ const AnyReactComponent = ({ text }) => (
 class Map extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { lat: 38.79768, lng: -77.400763, addresses: [] };
+        this.state = { lat: 38.79768, lng: -77.400763, addresses: [], entityCount: 0 };
 
         this.getAddresses = this.getAddresses.bind(this);
     }
@@ -29,10 +29,9 @@ class Map extends React.Component {
         zoom: 11
     };
 
-    componentDidUpdate(prevProps) { 
-        console.log(prevProps)
-        console.log
-        if (this.props.entities !== this.prevProps) {
+    componentDidUpdate(prevProps, prevState) { 
+        if (Object.keys(this.props.entities).length !== this.state.entityCount) {
+            this.setState({ entityCount: Object.keys(this.props.entities).length })
             this.getAddresses(this.props.entities);
         }
     }
@@ -109,13 +108,11 @@ class Map extends React.Component {
 	//}
 
     getAddresses(entities) {
-        console.log('hellooo')
-        console.log(entities)
         if (entities !== undefined) {
             var addresses = {}
 
             for (var entity in entities) {
-                if (entities[entity['type']] === 'address') {
+                if (entities[entity]['type'] === 'address') {
                     const addy = entities[entity]['value'];
 
                     if (addresses[addy] === undefined) {
@@ -143,15 +140,7 @@ class Map extends React.Component {
                 );
             }
         
-            Geocode.fromAddress("6705 Cedar View Court Clifton, Virginia, 20124").then(
-                response => {
-                  const { lat, lng } = response.results[0].geometry.location;
-                  this.setState({ lat: lat, lng: lng });
-                },
-                error => {
-                  console.error(error);
-                }
-              );
+            // this.props.callback();
         }
     }
 

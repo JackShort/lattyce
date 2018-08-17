@@ -36,8 +36,12 @@ class LoginForm extends Component {
 	render() {
 		return (
 			<div className="Login">
-				<div className="alert alert-warning" hidden={!this.props.incorrectLogin}>
-   	 				Incorrect login information.
+				<div className="alert alert-warning alert-dismissible"  role="alert" hidden={!this.props.incorrectLogin}>
+   	 				<strong>Incorrect Login!</strong> Username and password did not match.
+  				</div>
+
+				<div className="header">
+					<h2>Lattyce</h2>
   				</div>
 
 				<form onSubmit={this.handleSubmit}>
@@ -63,6 +67,7 @@ class LoginForm extends Component {
 						bsSize="large"
 						disabled={!this.validateForm()}
 						type="submit"
+						className="btn btn-primary"
 					>
 					Login
 					</Button>

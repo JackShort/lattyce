@@ -14,6 +14,7 @@ import NodeData from './NodeData';
 import CreateLink from './CreateLink';
 import SaveChanges from './SaveChanges';
 import WildcardSearch from './WildcardSearch';
+import CreateEntity from './CreateEntity';
 
 const fetch = new createApolloFetch({
   uri: 'http://localhost:4000/graphql',
@@ -41,7 +42,7 @@ class Graph extends Component {
 	constructor(props) {
 		super(props);
 
-		this.state = { cytoscapeLayout: 'grid', elements: {}, elementIds: [], links: [], linkDict: {}, selectedNodeId: '', shouldUpdatePositions: false, size: 12, table: false, map: false, mapHeight: '900px', graphs: [], showAlert: false, showAddEntity: false, shouldChangeGraph: true, selected: [], selectedNodes: [], loaded: true, justStoredPostions: false, positions: {}, storedNodesAndPositions: [], entities: {}, newData: false, canAddLink: false, nodesToLink: [], showEditNode: false, graphLoaded: false, graphId: 0, graphName: '', showCreateLink: false, showSaveChanges: false, shouldClearOnSave: false, showSearch: false };
+		this.state = { cytoscapeLayout: 'grid', elements: {}, elementIds: [], links: [], linkDict: {}, selectedNodeId: '', shouldUpdatePositions: false, size: 12, table: false, map: false, mapHeight: '900px', graphs: [], showAlert: false, showAddEntity: false, showCreateEntity: false, shouldChangeGraph: true, selected: [], selectedNodes: [], loaded: true, justStoredPostions: false, positions: {}, storedNodesAndPositions: [], entities: {}, newData: false, canAddLink: false, nodesToLink: [], showEditNode: false, graphLoaded: false, graphId: 0, graphName: '', showCreateLink: false, showSaveChanges: false, shouldClearOnSave: false, showSearch: false, shouldRefreshMap: false };
 		this.changeLayout = this.changeLayout.bind(this);
 		this.showTable = this.showTable.bind(this);
 		this.showMap = this.showMap.bind(this);
@@ -74,6 +75,10 @@ class Graph extends Component {
 		this.saveChanges = this.saveChanges.bind(this);
 		this.showSearch = this.showSearch.bind(this);
 		this.hideSearch = this.hideSearch.bind(this);
+		this.hideCreateEntity = this.hideCreateEntity.bind(this);
+		this.showCreateEntity = this.showCreateEntity.bind(this);
+		this.refreshedMap = this.refreshedMap.bind(this);
+		this.overwriteDataAndNewChart = this.overwriteDataAndNewChart.bind(this);
 	}
 
 	componentDidMount() {
@@ -271,7 +276,8 @@ class Graph extends Component {
 					'shape' : 'roundrectangle',
 					'content': 'data(name)',
 					'width': '150px',
-					'height': '150px'
+					'height': '150px',
+					'color': 'white'
 			}).selector(':selected')
 				.css({
 					'border-width': '6px',
@@ -285,15 +291,19 @@ class Graph extends Component {
 			  		'target-arrow-shape': 'triangle',
 			  		'source-arrow-shape': 'triangle',
 			  		'label': 'data(label)',
-			  		'width': 4,
-			  		'line-color': '#ddd',
-			  		'target-arrow-color': '#ddd',
-			  		'source-arrow-color': '#ddd'
+					'width': 4,
+					'color': 'white',
+					"text-outline-color": "#1DA1F2",
+					"text-outline-width": 3,
+					'font-size': 20,
+			  		'line-color': 'white',
+			  		'target-arrow-color': '#1DA1F2',
+			  		'source-arrow-color': '#1DA1F2'
 		  	}).selector('edge.family')
 		  		.css({
 			 	 	'source-arrow-shape': 'triangle',
 			 	 	'source-arrow-color': '#ddd'
-		  	}).selector('[attribute="male"]')
+		  	}).selector('[attribute="person"]')
 				.css({
 					'background-image': 'http://localhost:8080/male.png',
 					'background-clip': 'none',
@@ -359,7 +369,7 @@ class Graph extends Component {
 	}
 
 	changeLayout(newLayout) {
-		this.setState({ cytoscapeLayout: newLayout, loaded: false, justStoredPostions: false });
+		this.setState({ cytoscapeLayout: newLayout, loaded: false, justStoredPostions: false, shouldUpdatePositions: false });
 	}
 
 	showTable() {
@@ -394,6 +404,10 @@ class Graph extends Component {
 				this.setState({ size: 12, map: false, shouldChangeGraph: true, loaded: false, justStoredPostions: false });
 			}
 		}
+	}
+
+	refreshedMap() {
+		this.setState({ refreshedMap: false });
 	}
 
 	getData(selected) {
@@ -483,6 +497,63 @@ class Graph extends Component {
 
 			fetch({ query, variables }).then( res => {
 				this.getGraphs();
+				this.setState({ shouldChangeGraph: false })
+			});
+		});
+	}
+
+	overwriteDataAndNewChart(name) {
+		const query = `
+		mutation deleteGraph($id: Int!) {
+			deleteGraph(id: $id) {
+				id
+			}
+		  }
+		`;
+
+		const variables = {
+			id: this.state.graphId,
+		};
+
+		fetch({ query, variables }).then( res => {
+			let positions = [];
+			this.cy.nodes().map(node => {
+				var dict = {}
+				var relPosition = node.relativePosition();
+				dict["x"] = relPosition['x'];
+				dict["y"] = relPosition['y'];
+				dict['type'] = 'pair';
+				dict['value'] = node.data('name');
+				dict['type'] = node.data('attribute');
+				dict['entityId'] = node.data('entityId');
+				dict['fields'] = this.state.elements[node.id()]['fields'];
+				dict['values'] = this.state.elements[node.id()]['values'];
+				positions.push(dict);
+				return true;
+			});
+
+			const query = `
+			mutation createGraph($nodes: [NodesInput], $links: [LinksInput], $name: String!) {
+				createGraph(name: $name, nodes: $nodes, links: $links) {
+					name
+				  	id
+				  	nodes {
+						id
+				  	}
+				}
+			  }
+			`;
+
+			const variables = {
+				nodes: positions,
+				name: name,
+				links: this.state.links
+			};
+
+			fetch({ query, variables }).then( res => {
+				this.getGraphs();
+				this.setState({ shouldChangeGraph: false })
+				this.newChart();
 			});
 		});
 	}
@@ -543,7 +614,7 @@ class Graph extends Component {
 	saveChanges(shouldSave) {
 		if (shouldSave == 1) {
 			if (this.state.graphLoaded) {
-				this.overwriteData(this.state.graphName);
+				this.overwriteDataAndNewChart(this.state.graphName);
 			} else {
 				this.setState({ showAlert: true, shouldChangeGraph: false, shouldClearOnSave: true });
 			}
@@ -555,6 +626,8 @@ class Graph extends Component {
 	addEntity(data) {
 		var elements = this.state.elements;
 		var elementIds = this.state.elementIds;
+
+		console.log(data)
 
 		const node = {
 			'id': parseInt(data['id']),
@@ -568,7 +641,7 @@ class Graph extends Component {
 		elements[node['id']] = node;
 		elementIds.push(parseInt(data['id']));
 
-		this.setState({ elements: elements, elementIds: elementIds, showAddEntity: false, showSearch: false, shouldChangeGraph: true });
+		this.setState({ elements: elements, elementIds: elementIds, showAddEntity: false, showCreateEntity: false, showSearch: false, shouldUpdatePositions: false, shouldChangeGraph: true });
 	}
 
 	showEntity() {
@@ -579,8 +652,17 @@ class Graph extends Component {
 		this.setState({ showAddEntity: false, shouldChangeGraph: false });
 	}
 
+	showCreateEntity() {
+		this.setState({ showCreateEntity: true, shouldChangeGraph: false });
+	}
+
+
+	hideCreateEntity() {
+		this.setState({ showAddEntity: false, showCreateEntity: false, shouldChangeGraph: false });
+	}
+
 	addLink() {
-		this.setState({ canAddLink: !this.state.canAddLink, shouldChangeGraph: false });
+		this.setState({ canAddLink: !this.state.canAddLink, shouldChangeGraph: false, shouldUpdatePositions: false });
 	}
 
 	createLink(value) {
@@ -771,7 +853,7 @@ class Graph extends Component {
 				elementIds.push(node['id']);
 			});
 			
-			this.setState({ elements: dict, elementIds: elementIds, links: res.data['graph']['links'], graphId: id, graphName: name, graphLoaded: true, shouldUpdatePositions: true });
+			this.setState({ elements: dict, elementIds: elementIds, links: res.data['graph']['links'], graphId: id, graphName: name, graphLoaded: true, shouldUpdatePositions: true, shouldChangeGraph: true });
 		});
 	}
 
@@ -883,6 +965,7 @@ class Graph extends Component {
 					elementIds: elementIds,
 					links: links,
 					shouldChangeGraph: true,
+					shouldUpdatePositions: false
 				})
 			});
 		}
@@ -893,7 +976,8 @@ class Graph extends Component {
 	}
 
 	hideEditNode(nodeData) {
-		this.setState({ showEditNode: false, shouldChangeGraph: false, elements: nodeData });
+		this.savePositions();
+		this.setState({ showEditNode: false, shouldChangeGraph: true, elements: nodeData, shouldUpdatePositions: true, shouldRefreshMap: true });
 	}
 
 	newChart() {
@@ -906,7 +990,10 @@ class Graph extends Component {
 			graphName: '',
 			shouldUpdatePositions: false,
 			shouldClearOnSave: false,
-			shouldChangeGraph: true
+			shouldChangeGraph: true,
+			map: false,
+			table: false,
+			size: 12
 		})
 	}
 
@@ -942,6 +1029,8 @@ class Graph extends Component {
 		var data = this.getData(this.state.selected);
 		var graphs = this.state.graphs;
 
+		console.log(this.state.elements)
+
 		return (
 			<Grid style={{ height: '100vh', width: '100%' }} className="full-width-container" >
 				<SaveAlert shouldShow={this.state.showAlert} callback={this.hideAlert} saveData={this.saveData} />
@@ -950,6 +1039,7 @@ class Graph extends Component {
 				<CreateLink shouldShow={this.state.showCreateLink} callback={this.hideCreateLink} saveData={this.createLink} />
 				<SaveChanges shouldShow={this.state.showSaveChanges} callback={this.hideSaveChanges} saveData={this.saveChanges} />
 				<WildcardSearch shouldShow={this.state.showSearch} callback={this.hideSearch} saveData={this.addEntity} />
+				<CreateEntity shouldShow={this.state.showCreateEntity} callback={this.hideCreateEntity} saveData={this.addEntity} />
 
 				<Navbar>
 					<Navbar.Header>
@@ -975,8 +1065,9 @@ class Graph extends Component {
 						<NavDropdown eventKey={18} title="Edit" id="basic-nav-dropdown">
 							<MenuItem eventKey={4} onClick={this.showAlert}>Save</MenuItem>
 							<MenuItem eventKey={4} onClick={this.saveAs}>Save As</MenuItem>
-							<MenuItem eventKey={5} onClick={this.showEntity}>Add Entity</MenuItem>
-							<MenuItem eventKey={17} onClick={this.showSearch}>Wild Card Search</MenuItem>
+							{/* <MenuItem eventKey={5} onClick={this.showEntity}>Add Entity</MenuItem> */}
+							<MenuItem eventKey={15} onClick={this.showCreateEntity}>Add Entity</MenuItem>
+							<MenuItem eventKey={17} onClick={this.showSearch}>Search</MenuItem>
 							<MenuItem eventKey={6} onClick={this.showCreateLink}>Add Link</MenuItem>
 							<MenuItem eventKey={7} onClick={this.expand}>Expand</MenuItem>
 							<MenuItem eventKey={8} onClick={this.newChart}>New Chart</MenuItem>
@@ -1005,16 +1096,19 @@ class Graph extends Component {
 					</li>
 				</ul>
 
-				<Row style={{ width: '100%' }}>
+				<Row>
 					{/* <Col sm={this.state.size}> */}
 					<Col sm={this.state.size}>
 						<CytoContainer elements={this.getElements()} cytoRef={(cy) => {this.cyRef(cy)}} layout={this.getLayout()} style={this.getStyle()} table={this.state.table} newData={this.state.newData} shouldChangeGraph={this.state.shouldChangeGraph} />
+						<div id="label" hidden={!(Object.keys(this.state.elements).length === 0)}>
+							<h3>Add a node to the graph!</h3>
+						</div>
 					</Col>
 
 					{/* <Col sm={this.state.size} hidden={!this.state.map}> */}
 					<Col sm={this.state.size} hidden={!this.state.map && !this.state.table}>
 						<Row hidden={!this.state.map}>
-							<Map entities={this.state.elements} height={this.state.mapHeight} />
+							<Map entities={this.state.elements} height={this.state.mapHeight} shouldRefresh={this.state.shouldRefreshMap} callback={this.refreshedMap} />
 						</Row>
 						<Row hidden={!this.state.table}>
 							<EntityTable data={this.getData()}  selected={this.state.selected} callback={this.tableMadeChange} />

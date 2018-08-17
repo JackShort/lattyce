@@ -1,5 +1,6 @@
 import React from 'react';
 import { Table } from "react-bootstrap";
+import './table.css';
 
 class EntityTable extends React.Component {
 	constructor(props) {
@@ -49,6 +50,7 @@ class EntityTable extends React.Component {
 		var types = {};
 		var setType = false;
 		var type = '';
+		var typeCount = {};
 
 		for (var i in data) {
 			if (setType === false) {
@@ -58,6 +60,7 @@ class EntityTable extends React.Component {
 
 			if (types[data[i]['type']] === undefined) {
 				types[data[i]['type']] = [data[i]]
+				typeCount[data[i]['type']] = 0;
 			} else {
 				types[data[i]['type']].push(data[i]);
 			}
@@ -65,13 +68,14 @@ class EntityTable extends React.Component {
 
 		type = this.state.type === '' ? type : this.state.type;
 
+
 		return (
-			<div>
-				<ul className="nav nav-tabs">
+			<div id="table">
+				<ul className="nav nav-tabs" id="table-tabs">
 				{
-					Object.keys(types).map((type, i) => {
+					Object.keys(types).map((eType, i) => {
 						return (
-							<li key={i} role="presentation" onClick={this.tabClick} value={type} index={i} className={this.state.active === i ? 'active' : ''}><a href="#">{type}</a></li>
+							<li key={i} role="presentation" onClick={this.tabClick} value={eType} index={i} className={type === eType ? 'active active-tab' : 'non-active'}><a href="#">{eType}</a></li>
 						)
 					})
 				}
@@ -89,8 +93,10 @@ class EntityTable extends React.Component {
 					<tbody>
 						{ data.map((row, i) => {
 							if (row.type === type) {
+								var typei = typeCount[row.type];
+								typeCount[row.type] = typeCount[row.type] + 1;
 								return (
-									<tr key={row.id + row.id} index={i} data={row.id} onClick={this.rowclick} className={this.state.selected.includes(String(row.id)) ? 'active' : ''}>
+									<tr id={typei % 2 === 0 ? 'data-row-even' : 'data-row-odd' } key={row.id + row.id} index={i} data={row.id} onClick={this.rowclick} className={this.state.selected.includes(String(row.id)) ? 'active' : ''}>
 										<td key={row.id}>{row.id}</td>
 										<td key={row.value}>{row.value}</td>
 										<td key={row.type}>{row.type}</td>

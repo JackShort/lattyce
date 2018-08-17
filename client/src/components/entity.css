@@ -2,8 +2,30 @@ body {
 	background-color: #131C25;
 }
 
+#entityDiv {
+    background-color: #1A2836;
+}
+
+.modal-header {
+    background-color: #1A2836;
+    color: white;
+    border: 1px solid black !important;
+}
+
+.modal-body {
+    background-color: #1A2836;
+    color: white;
+    border: 1px solid black !important;
+}
+
+.modal-footer {
+    background-color: #1A2836;
+    color: white;
+    border: 1px solid black !important;
+}
+
 @media all and (min-width: 480px) {
-	.Register {
+	.Login {
 		background-color: #1A2836;
 		max-width: 420px;
 		margin: auto;
@@ -11,7 +33,7 @@ body {
 		padding-bottom: 60px;
 	}
   
-	.Register form {
+	.Login form {
 		color: white;
 		margin: 0 auto;
 		max-width: 320px;
@@ -30,6 +52,6 @@ body {
 
 	.alert {
 		margin: 0 auto;
-		max-width: 320px;
+		max-width: 420px;
 	}
 }

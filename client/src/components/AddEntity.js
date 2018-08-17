@@ -3,6 +3,7 @@ import { Popover, Tooltip, Modal, Table, Button, FormGroup, ControlLabel, FormCo
 import { createApolloFetch } from 'apollo-fetch';
 import gql from 'graphql-tag';
 import { RSA_NO_PADDING } from 'constants';
+import './entity.css';
 
 const fetch = new createApolloFetch({
   uri: 'http://localhost:4000/graphql',
@@ -36,7 +37,7 @@ class AddEntity extends React.Component {
 
     handleDismiss() {
         this.props.callback();
-        this.setState({ show: false });
+        this.setState({ show: false, showForm: true });
     }
 
     handleShow() {
@@ -106,8 +107,8 @@ class AddEntity extends React.Component {
           var data = this.state.data;
       
           return (
-            <div>
-              <Modal show={this.state.show} onHide={this.handleDismiss}>
+            <div id="entityDiv">
+              <Modal show={this.state.show} onHide={this.handleDismiss} id="modal">
                 <Modal.Header closeButton>
                   <Modal.Title>Add Entity</Modal.Title>
                 </Modal.Header>
@@ -161,7 +162,7 @@ class AddEntity extends React.Component {
                     </Table>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" className={this.state.showForm ? 'visible' : 'invisible'} onClick={this.handleSubmit} form='formSearch' >Search</Button>
+                    <Button type="submit" className={this.state.showForm ? 'visible btn btn-info' : 'invisible btn btn-info'} onClick={this.handleSubmit} form='formSearch' >Search</Button>
                 </Modal.Footer>
               </Modal>
             </div>

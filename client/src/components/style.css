@@ -3,9 +3,15 @@ body {
   background: #131C25;
 }
 
+.row {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
 .graph {
 	min-height: 900px;
-  background: #131C25;
+  background: #1A2836;
+  margin: auto;
 }
 
 .table-hover>tbody>tr:hover>td, .table-hover>tbody>tr:hover>th {
@@ -25,11 +31,6 @@ body {
   color: white !important;
 }
 
-
-.active>th, .active>td {
-  background-color: #a1a2d9 !important;
-}
-
 .dropdown {
   color: white;
 }
@@ -40,7 +41,7 @@ body {
 }
 
 .nav-tabs {
-  background-color: #1A2836 !important; 
+  background-color: #1A2532 !important; 
 }
 
 .navbar-default {
@@ -50,6 +51,28 @@ body {
 
 #basic-nav-dropdown {
   color: #CACCCE;
+}
+
+#label {
+  z-index: 1000;
+  color: #268dcc;
+  position: absolute;
+  top: 50%; 
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.center {
+  margin: auto;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.save-changes {
+  /* background-color: blue !important; */
+  width: 25%;
 }
 
 .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus {

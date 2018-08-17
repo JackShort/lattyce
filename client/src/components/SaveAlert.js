@@ -64,7 +64,7 @@ class SaveAlert extends React.Component {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button type="submit" onClick={this.handleSubmit}>Submit</Button>
+                  <Button type="submit" className="btn btn-primary" onClick={this.handleSubmit}>Submit</Button>
                 </Modal.Footer>
               </Modal>
             </div>

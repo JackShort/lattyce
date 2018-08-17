@@ -37,6 +37,13 @@ class RegisterForm extends Component {
 	render() {
 		return (
 			<div className="Register">
+				<div className="alert alert-warning alert-dismissible"  role="alert" hidden={!this.props.incorrectRegistration}>
+   	 				<strong>Registration failed!</strong> Username already taken.
+  				</div>
+
+				<div className="header">
+					<h2>Lattyce</h2>
+  				</div>
 				<form onSubmit={this.handleSubmit}>
 					<FormGroup controlId="username" bsSize="large">
 						<ControlLabel>Username</ControlLabel>
@@ -60,6 +67,7 @@ class RegisterForm extends Component {
 						bsSize="large"
 						disabled={!this.validateForm()}
 						type="submit"
+						className="btn btn-primary"
 					>
 					Register
 					</Button>
