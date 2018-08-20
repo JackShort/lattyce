@@ -4,6 +4,7 @@ import Sequelize, { Op } from 'sequelize';
 const db = new Sequelize('constellations', 'jackshort', 'jshort', {
     host: 'localhost',
     dialect: 'postgres',
+    port: '5432',
 
     pool: {
       max: 5,
